@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.annotation.SuppressLint;
+import android.content.Intent; // Importar Intent
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,9 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton radioButton_pulsado;
     private Button backToLoginButton;
 
+    // Variable para rastrear la sesión de invitado
+    private boolean isGuestSession = false;
+
 
     @SuppressLint({"SetTextI18n", "CutPasteId"})
     @Override
@@ -40,8 +44,12 @@ public class MainActivity extends AppCompatActivity {
         Button registerButton = findViewById(R.id.button_register);
 
         loginButton.setOnClickListener(v -> attemptLogin());
+
+        // LÓGICA DE INVITADO
         registerButton.setOnClickListener(v -> {
+            isGuestSession = true;
             Toast.makeText(this, "Acceso en Modo Invitado", Toast.LENGTH_SHORT).show();
+            setupListView(); // Refrescar vista con restricción de invitado
             switchToListView();
         });
 
@@ -63,9 +71,12 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Completa todos los campos.", Toast.LENGTH_SHORT).show();
             return;
         }
+
         // Credenciales de Prueba
         if (username.equals(user) && password.equals(pass)) {
+            isGuestSession = false; // Login exitoso (NO invitado)
             Toast.makeText(this, "Bienvenido " + user, Toast.LENGTH_LONG).show();
+            setupListView(); // Refrescar vista con contenido completo
             switchToListView();
         } else {
             Toast.makeText(this, "Usuario o contraseña inválidos.", Toast.LENGTH_LONG).show();
@@ -83,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         if (listviewContainer.getVisibility() == View.VISIBLE) {
             listviewContainer.setVisibility(View.GONE);
             loginContainer.setVisibility(View.VISIBLE);
+            // Limpia el estado de invitado al volver al login
+            isGuestSession = false;
         } else {
             super.onBackPressed();
         }
@@ -101,17 +114,19 @@ public class MainActivity extends AppCompatActivity {
             backToLoginButton.setOnClickListener(v -> {
                 listviewContainer.setVisibility(View.GONE);
                 loginContainer.setVisibility(View.VISIBLE);
+                isGuestSession = false;
                 Toast.makeText(this, "Volviendo al Login", Toast.LENGTH_SHORT).show();
             });
         }
 
         // 2. Crear la fuente de datos
         ArrayList<Encapsulador> datos = new ArrayList<>();
-        datos.add(new Encapsulador(R.drawable.drs1, "Dr.Stone Manga 1", "Dr.Stone Manga 1 disponible en amazon", false));
-        datos.add(new Encapsulador(R.drawable.drs2, "Dr.Stone Manga 2", "Dr.Stone Manga 2 disponible en amazon", false));
-        datos.add(new Encapsulador(R.drawable.drs3, "Dr.Stone Manga 3", "Dr.Stone Manga 3 disponible en amazon", false));
-        datos.add(new Encapsulador(R.drawable.drs4, "Dr.Stone Manga 4", "Dr.Stone Manga 4 disponible en amazon", false));
-        datos.add(new Encapsulador(R.drawable.drs5, "Dr.Stone Manga 5", "Dr.Stone Manga 5 disponible en amazon", false));
+        // Asume que R.drawable.drsX existen en tu proyecto
+        datos.add(new Encapsulador(R.drawable.drs1, "Dr.Stone Manga 1", "Dr.Stone Manga 1 disponible en amazon. La historia sigue a Senku Ishigami, un joven genio de la ciencia.", false));
+        datos.add(new Encapsulador(R.drawable.drs2, "Dr.Stone Manga 2", "Dr.Stone Manga 2 disponible en amazon. Senku y Taiju comienzan la misión de despetrificar a la humanidad.", false));
+        datos.add(new Encapsulador(R.drawable.drs3, "Dr.Stone Manga 3", "Dr.Stone Manga 3 disponible en amazon. La fundación del Reino de la Ciencia.", false));
+        datos.add(new Encapsulador(R.drawable.drs4, "Dr.Stone Manga 4", "Dr.Stone Manga 4 disponible en amazon. Preparativos para la primera guerra con Tsukasa.", false));
+        datos.add(new Encapsulador(R.drawable.drs5, "Dr.Stone Manga 5", "Dr.Stone Manga 5 disponible en amazon. Introducción de nuevos inventos científicos.", false));
 
         Adaptador adaptador = new Adaptador(this, R.layout.entrada, datos) {
             @SuppressLint("SetTextI18n")
@@ -129,30 +144,55 @@ public class MainActivity extends AppCompatActivity {
                     // Sincronizar datos y estado del RadioButton
                     imagen.setImageResource(datosEntrada.get_imagen());
                     titulo.setText(datosEntrada.get_textoTitulo());
-                    contenido.setText(datosEntrada.get_textoContenido());
-                    radioButton.setChecked(datosEntrada.get_CheckBox());
 
+                    // --- RESTRICCIÓN DE CONTENIDO VISUAL EN LISTA ---
+                    if (isGuestSession) {
+                        contenido.setText("Regístrate para ver la descripción.");
+                        contenido.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                    } else {
+                        contenido.setText(datosEntrada.get_textoContenido());
+                        contenido.setTextColor(getResources().getColor(android.R.color.darker_gray));
+                    }
+                    // --------------------------------------------------
+
+                    radioButton.setChecked(datosEntrada.get_CheckBox());
                     radioButton.setTag(datosEntrada);
 
                     radioButton.setOnClickListener(v -> {
                         RadioButton currentRadioButton = (RadioButton) v;
                         Encapsulador currentData = (Encapsulador) currentRadioButton.getTag();
 
-                        if (radioButton_pulsado != null && radioButton_pulsado != currentRadioButton) {
-                            radioButton_pulsado.setChecked(false);
-                            Encapsulador oldData = (Encapsulador) radioButton_pulsado.getTag();
-                            if (oldData != null) {
-                                oldData.set_CheckBox(false);
+                        // --- NUEVA LÓGICA DE NAVEGACIÓN (solo si no es invitado) ---
+                        if (!isGuestSession) {
+                            // 1. Inicia la nueva Activity
+                            Intent intent = new Intent(MainActivity.this, DetalleActivity.class);
+                            intent.putExtra(DetalleActivity.EXTRA_IMAGEN, currentData.get_imagen());
+                            intent.putExtra(DetalleActivity.EXTRA_TITULO, currentData.get_textoTitulo());
+                            intent.putExtra(DetalleActivity.EXTRA_CONTENIDO, currentData.get_textoContenido());
+                            startActivity(intent);
+
+                            // 2. Continúa con la lógica de la selección del RadioButton
+                            if (radioButton_pulsado != null && radioButton_pulsado != currentRadioButton) {
+                                radioButton_pulsado.setChecked(false);
+                                Encapsulador oldData = (Encapsulador) radioButton_pulsado.getTag();
+                                if (oldData != null) {
+                                    oldData.set_CheckBox(false);
+                                }
                             }
-                        }
+                            currentRadioButton.setChecked(true);
+                            radioButton_pulsado = currentRadioButton;
+                            currentData.set_CheckBox(true);
 
-                        currentRadioButton.setChecked(true);
-                        radioButton_pulsado = currentRadioButton;
-                        currentData.set_CheckBox(true);
-
-                        if (texto != null) {
-                            texto.setText("Manga Selecinado: " + currentData.get_textoTitulo());
+                            if (texto != null) {
+                                texto.setText("Manga Selecinado: " + currentData.get_textoTitulo());
+                            }
+                        } else {
+                            // 3. Si es invitado, muestra un aviso y no navega
+                            Toast.makeText(MainActivity.this, "Debes iniciar sesión para ver los detalles del producto.", Toast.LENGTH_LONG).show();
+                            // También puedes desmarcar forzosamente el radio button para evitar selección "falsa"
+                            currentRadioButton.setChecked(false);
                         }
+                        // -------------------------------------------------------------
                     });
 
                     if (datosEntrada.get_CheckBox()) {
