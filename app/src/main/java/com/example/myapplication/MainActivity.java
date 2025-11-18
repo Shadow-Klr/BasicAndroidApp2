@@ -1,7 +1,7 @@
 package com.example.myapplication;
 
 import android.annotation.SuppressLint;
-import android.content.Intent; // Importar Intent
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private TextView texto;
     private RadioButton radioButton_pulsado;
     private Button backToLoginButton;
+
+    // Clave para guardar y restaurar el estado
+    private static final String STATE_IS_GUEST_SESSION = "isGuestSession";
+    private static final String STATE_IS_LIST_VISIBLE = "isListVisible";
 
     // Variable para rastrear la sesión de invitado
     private boolean isGuestSession = false;
@@ -53,11 +57,38 @@ public class MainActivity extends AppCompatActivity {
             switchToListView();
         });
 
+        // Llamar a setupListView antes de restaurar el estado para inicializar el adaptador
         setupListView();
 
-        listviewContainer.setVisibility(View.GONE);
-        loginContainer.setVisibility(View.VISIBLE);
+        // ----------------------------------------------------
+        // CAMBIO 1: Lógica de restauración de estado (maneja rotación y recreación)
+        if (savedInstanceState != null) {
+            isGuestSession = savedInstanceState.getBoolean(STATE_IS_GUEST_SESSION, false);
+            boolean isListVisible = savedInstanceState.getBoolean(STATE_IS_LIST_VISIBLE, false);
+
+            if (isListVisible) {
+                switchToListView();
+            } else {
+                loginContainer.setVisibility(View.VISIBLE);
+                listviewContainer.setVisibility(View.GONE);
+            }
+        } else {
+            // Estado inicial si no hay estado guardado (primera ejecución)
+            listviewContainer.setVisibility(View.GONE);
+            loginContainer.setVisibility(View.VISIBLE);
+        }
+        // ----------------------------------------------------
     }
+
+    // ----------------------------------------------------
+    // CAMBIO 2: Guardar el estado de la vista al rotar
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(STATE_IS_GUEST_SESSION, isGuestSession);
+        outState.putBoolean(STATE_IS_LIST_VISIBLE, listviewContainer.getVisibility() == View.VISIBLE);
+    }
+    // ----------------------------------------------------
 
 
     private void attemptLogin() {
@@ -104,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void setupListView() {
         // Enlazar componentes de main_app.xml (gracias a <include>)
+        // Nota: Si hay errores de NPE aquí, se recomienda usar listviewContainer.findViewById(...)
         ListView lista = findViewById(R.id.my_list_view);
         texto = findViewById(R.id.footer_text);
         Button btnClearSelection = findViewById(R.id.btn_clear_selection);

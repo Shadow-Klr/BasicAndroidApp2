@@ -1,61 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal"
+    android:background="@color/purple_light_bg">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Detalles del Manga"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="@color/purple_dark"
+        android:layout_marginBottom="20dp"/>
+
+    <ImageView
+        android:id="@+id/detalle_imagen"
+        android:layout_width="250dp"
+        android:layout_height="320dp"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="Imagen del manga en detalle"
+        android:src="@drawable/logo_shadows" />
+
+    <TextView
+        android:id="@+id/detalle_titulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="12dp"
+        android:text="Título del Producto" />
+
+    <TextView
+        android:id="@+id/detalle_contenido"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal"
-        android:background="@color/purple_light_bg">
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:textColor="@android:color/darker_gray"
+        android:text="Descripción detallada del manga. Si esta descripción es muy larga, el NestedScrollView permitirá al usuario desplazarse hacia abajo para leerla completamente." />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Detalles del Manga"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:textColor="@color/purple_dark"
-            android:layout_marginBottom="20dp"/>
-
-        <ImageView
-            android:id="@+id/detalle_imagen"
-            android:layout_width="250dp"
-            android:layout_height="320dp"
-            android:scaleType="centerCrop"
-            android:layout_marginBottom="24dp"
-            android:contentDescription="Imagen del manga en detalle"
-            android:src="@drawable/logo_shadows" />
-
-        <TextView
-            android:id="@+id/detalle_titulo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="12dp"
-            android:text="Título del Producto" />
-
-        <TextView
-            android:id="@+id/detalle_contenido"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:textColor="@android:color/darker_gray"
-            android:text="Descripción detallada del manga." />
-
-        <Button
-            android:id="@+id/btn_detalle_volver"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Volver a la Lista"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/purple_dark" />
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/btn_detalle_volver"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Volver a la Lista"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/purple_dark" />
+</LinearLayout>
+</androidx.core.widget.NestedScrollView>
